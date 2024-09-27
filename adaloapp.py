@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 import requests
+import json
 
 app = Flask(__name__)
 
@@ -44,20 +45,26 @@ def get_subcategories():
         print(f"Failed to retrieve subcategories. Status code: {response.status_code}")
         return {"error": "Failed to retrieve subcategories", "status_code": response.status_code}
 
-# Function to update user's "PracticeBase" with post IDs
+# Function to update user's "PracticeBase" with post IDs, treating the payload as a string
 def update_user_practice_base(user_id, practice_base):
     adalo_api_url = f"https://api.adalo.com/v0/apps/eb904f7c-1bb5-41e8-b35a-5e1453debad3/collections/t_4d891624fa3c4f86b4bce06a08b6ec93/{user_id}"
     headers = {
         'Authorization': f'Bearer {ADALO_API_KEY}',
         'Content-Type': 'application/json'
     }
-    # Update the "PracticeBase" field with new post IDs
-    payload = {
-        "PracticeBase": practice_base
-    }
     
-    print(f"Updating user {user_id} PracticeBase with: {practice_base}")
-    response = requests.put(adalo_api_url, headers=headers, json=payload)
+    # Ensure practice_base is a list
+    if not isinstance(practice_base, list):
+        practice_base = [practice_base]
+    
+    # Manually create the JSON payload as a string to match Postman behavior
+    payload_string = json.dumps({
+        "PraticeBase": practice_base
+    })
+    
+    print(f"Payload string being sent: {payload_string}")
+    
+    response = requests.put(adalo_api_url, headers=headers, data=payload_string)  # Using 'data' instead of 'json'
     
     if response.status_code == 200:
         updated_user_data = response.json()
@@ -65,6 +72,7 @@ def update_user_practice_base(user_id, practice_base):
         return updated_user_data  # Return updated user data as JSON
     else:
         print(f"Failed to update user data. Status code: {response.status_code}")
+        print(f"Response text: {response.text}")
         return {"error": "Failed to update user data", "status_code": response.status_code}
 
 @app.route('/fetch_user_and_update_posts', methods=['POST'])

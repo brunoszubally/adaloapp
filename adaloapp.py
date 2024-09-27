@@ -10,7 +10,7 @@ def get_user_data_from_adalo(user_id):
     
     # Make the request to Adalo API
     headers = {
-        'Authorization': 'Bearer YOUR_ADALO_API_KEY',  # Replace with your Adalo API key
+        'Authorization': 'Bearer e8wk2i21wge6oxz29ye9u9ykr',  # Replace with your Adalo API key
         'Content-Type': 'application/json'
     }
     

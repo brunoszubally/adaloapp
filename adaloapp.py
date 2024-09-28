@@ -45,21 +45,25 @@ def get_subcategories():
         print(f"Failed to retrieve subcategories. Status code: {response.status_code}")
         return {"error": "Failed to retrieve subcategories", "status_code": response.status_code}
 
-# Function to update user's "PracticeBase" with post IDs, treating the payload as a string
-def update_user_practice_base(user_id, practice_base):
+# Function to update user's "PracticeBase" and "Today" with post IDs
+def update_user_posts(user_id, practice_base, today):
     adalo_api_url = f"https://api.adalo.com/v0/apps/eb904f7c-1bb5-41e8-b35a-5e1453debad3/collections/t_4d891624fa3c4f86b4bce06a08b6ec93/{user_id}"
     headers = {
         'Authorization': f'Bearer {ADALO_API_KEY}',
         'Content-Type': 'application/json'
     }
     
-    # Ensure practice_base is a list
+    # Ensure practice_base and today are lists
     if not isinstance(practice_base, list):
         practice_base = [practice_base]
     
+    if not isinstance(today, list):
+        today = [today]
+    
     # Manually create the JSON payload as a string to match Postman behavior
     payload_string = json.dumps({
-        "PraticeBase": practice_base
+        "PraticeBase": practice_base,
+        "Today": today
     })
     
     print(f"Payload string being sent: {payload_string}")
@@ -108,9 +112,9 @@ def fetch_user_and_update_posts():
         
         print(f"All post IDs collected: {all_post_ids}")
         
-        # Step 4: Update user's "PracticeBase" with all post IDs
-        print(f"Step 4: Updating user {user_id} PracticeBase with post IDs")
-        updated_user_data = update_user_practice_base(user_id, all_post_ids)
+        # Step 4: Update user's "PracticeBase" and "Today" with all post IDs
+        print(f"Step 4: Updating user {user_id} PracticeBase and Today with post IDs")
+        updated_user_data = update_user_posts(user_id, all_post_ids, all_post_ids)
         if 'error' in updated_user_data:
             return jsonify(updated_user_data), updated_user_data.get("status_code", 500)
         

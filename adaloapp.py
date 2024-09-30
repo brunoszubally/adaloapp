@@ -126,7 +126,7 @@ def fetch_user_and_update_posts():
         print(f"An error occurred: {e}")
         return jsonify({"error": str(e)}), 500
 
-@app.route('/base-reset', methods=['POST'])
+@app.route('/base-reset', methods=['PATCH'])
 def base_reset():
     try:
         # Get the user ID and current subcategory ID from the request

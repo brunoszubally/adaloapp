@@ -79,7 +79,7 @@ def update_user_posts(user_id, practice_base, today):
         print(f"Response text: {response.text}")
         return {"error": "Failed to update user data", "status_code": response.status_code}
 
-@app.route('/fetch_user_and_update_posts', methods=['POST'])
+@app.route('/fetch_user_and_update_posts', methods=['PATCH'])
 def fetch_user_and_update_posts():
     try:
         # Get the user ID from Adalo's request

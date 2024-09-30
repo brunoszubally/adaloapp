@@ -45,49 +45,24 @@ def get_subcategories():
         print(f"Failed to retrieve subcategories. Status code: {response.status_code}")
         return {"error": "Failed to retrieve subcategories", "status_code": response.status_code}
 
-# Function to update user's "PracticeBase" field with post IDs
-def update_user_practice_base(user_id, practice_base):
+# Function to update user's "Today" and "Level1Post" fields with post IDs
+def update_user_today_and_level1(user_id, today, level1_post):
     adalo_api_url = f"https://api.adalo.com/v0/apps/eb904f7c-1bb5-41e8-b35a-5e1453debad3/collections/t_4d891624fa3c4f86b4bce06a08b6ec93/{user_id}"
     headers = {
         'Authorization': f'Bearer {ADALO_API_KEY}',
         'Content-Type': 'application/json'
     }
     
-    # Ensure practice_base is a list
-    if not isinstance(practice_base, list):
-        practice_base = [practice_base]
-    
-    payload_string = json.dumps({
-        "PraticeBase": practice_base
-    })
-    
-    print(f"Payload string being sent: {payload_string}")
-    
-    response = requests.put(adalo_api_url, headers=headers, data=payload_string)
-    
-    if response.status_code == 200:
-        updated_user_data = response.json()
-        print(f"User data updated successfully: {updated_user_data}")
-        return updated_user_data  # Return updated user data as JSON
-    else:
-        print(f"Failed to update user data. Status code: {response.status_code}")
-        print(f"Response text: {response.text}")
-        return {"error": "Failed to update user data", "status_code": response.status_code}
-
-# Function to update user's "Today" field with post IDs
-def update_user_today(user_id, today):
-    adalo_api_url = f"https://api.adalo.com/v0/apps/eb904f7c-1bb5-41e8-b35a-5e1453debad3/collections/t_4d891624fa3c4f86b4bce06a08b6ec93/{user_id}"
-    headers = {
-        'Authorization': f'Bearer {ADALO_API_KEY}',
-        'Content-Type': 'application/json'
-    }
-    
-    # Ensure today is a list
+    # Ensure today and level1_post are lists
     if not isinstance(today, list):
         today = [today]
     
+    if not isinstance(level1_post, list):
+        level1_post = [level1_post]
+    
     payload_string = json.dumps({
-        "Today": today
+        "Today": today,
+        "Level1Post": level1_post
     })
     
     print(f"Payload string being sent: {payload_string}")
@@ -196,9 +171,15 @@ def test():
             print(f"No posts found for subcategory {subcategory_id}")
             return jsonify({"message": "No posts found"}), 200
 
-        # Step 4: Add posts to the "Today" field of the user
-        print(f"Step 4: Adding posts from subcategory {subcategory_id} to Today for user {user_id}")
-        updated_user_data = update_user_today(user_id, posts_to_add)
+        # Step 4: Add posts to the "Today" and "Level1Post" fields of the user
+        existing_today = user_data.get('Today', [])
+        existing_level1_post = user_data.get('Level1Post', [])
+        
+        updated_today = list(set(existing_today + posts_to_add))
+        updated_level1_post = list(set(existing_level1_post + posts_to_add))
+
+        print(f"Updating user {user_id} Today and Level1Post with posts from subcategory {subcategory_id}")
+        updated_user_data = update_user_today_and_level1(user_id, updated_today, updated_level1_post)
         if 'error' in updated_user_data:
             return jsonify(updated_user_data), updated_user_data.get("status_code", 500)
 

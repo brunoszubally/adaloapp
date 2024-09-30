@@ -151,14 +151,14 @@ def base_reset():
 
         # Step 3: Find the specified subcategory and get its posts
         subcategories = subcategories_data.get('records', [])
-        subcategory = next((sc for sc in subcategories if sc.get('id') == subcategory_id), None)
+        subcategory = next((sc for sc in subcategories if str(sc.get('id')) == str(subcategory_id)), None)
 
         if not subcategory:
             print(f"Error: Subcategory with ID {subcategory_id} not found")
             return jsonify({"error": "Subcategory not found"}), 404
 
         # Get posts from PracticeDone in the subcategory
-        practice_done_posts = subcategory.get('PracticeDone', [])
+        practice_done_posts = subcategory.get('Posts', [])
         
         if not practice_done_posts:
             print(f"No PracticeDone posts found for subcategory {subcategory_id}")

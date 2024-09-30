@@ -157,24 +157,24 @@ def base_reset():
             print(f"Error: Subcategory with ID {subcategory_id} not found")
             return jsonify({"error": "Subcategory not found"}), 404
 
-        # Get posts from PracticeDone in the subcategory
-        practice_done_posts = subcategory.get('Posts', [])
+        # Get all posts from the subcategory
+        posts_to_add = subcategory.get('Posts', [])
         
-        if not practice_done_posts:
-            print(f"No PracticeDone posts found for subcategory {subcategory_id}")
-            return jsonify({"message": "No PracticeDone posts found"}), 200
+        if not posts_to_add:
+            print(f"No posts found for subcategory {subcategory_id}")
+            return jsonify({"message": "No posts found"}), 200
 
-        # Step 4: Update user's PracticeBase with posts from PracticeDone and clear PracticeDone
-        print(f"Updating user {user_id} PracticeBase with posts from PracticeDone in subcategory {subcategory_id}")
-        updated_user_data = update_user_posts(user_id, practice_done_posts, [])
+        # Step 4: Combine existing PracticeBase with new posts and update user data
+        existing_practice_base = user_data.get('PraticeBase', [])
+        updated_practice_base = list(set(existing_practice_base + posts_to_add))
+
+        print(f"Updating user {user_id} PracticeBase with posts from subcategory {subcategory_id}")
+        updated_user_data = update_user_posts(user_id, updated_practice_base, [])
         if 'error' in updated_user_data:
             return jsonify(updated_user_data), updated_user_data.get("status_code", 500)
 
-        # Clear PracticeDone in subcategory
-        subcategory['Posts'] = []
-
         # Return the updated user data
-        print(f"User {user_id} updated successfully with PracticeDone posts from subcategory {subcategory_id} and PracticeDone cleared")
+        print(f"User {user_id} updated successfully with posts from subcategory {subcategory_id}")
         return jsonify(updated_user_data)
 
     except Exception as e:

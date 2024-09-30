@@ -164,19 +164,23 @@ def base_reset():
             print(f"No PracticeDone posts found for subcategory {subcategory_id}")
             return jsonify({"message": "No PracticeDone posts found"}), 200
 
-        # Step 4: Update user's PracticeBase with posts from PracticeDone
+        # Step 4: Update user's PracticeBase with posts from PracticeDone and clear PracticeDone
         print(f"Updating user {user_id} PracticeBase with posts from PracticeDone in subcategory {subcategory_id}")
         updated_user_data = update_user_posts(user_id, practice_done_posts, [])
         if 'error' in updated_user_data:
             return jsonify(updated_user_data), updated_user_data.get("status_code", 500)
 
+        # Clear PracticeDone in subcategory
+        subcategory['Posts'] = []
+
         # Return the updated user data
-        print(f"User {user_id} updated successfully with PracticeDone posts from subcategory {subcategory_id}")
+        print(f"User {user_id} updated successfully with PracticeDone posts from subcategory {subcategory_id} and PracticeDone cleared")
         return jsonify(updated_user_data)
 
     except Exception as e:
         print(f"An error occurred: {e}")
         return jsonify({"error": str(e)}), 500
+
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -126,5 +126,57 @@ def fetch_user_and_update_posts():
         print(f"An error occurred: {e}")
         return jsonify({"error": str(e)}), 500
 
+@app.route('/base-reset', methods=['POST'])
+def base_reset():
+    try:
+        # Get the user ID and current subcategory ID from the request
+        user_id = request.json.get('user_id')
+        subcategory_id = request.json.get('subcategory_id')
+        
+        if not user_id or not subcategory_id:
+            print("Error: User ID or Subcategory ID not provided")
+            return jsonify({"error": "User ID or Subcategory ID not provided"}), 400
+
+        # Step 1: Fetch user data from Adalo API
+        print(f"Fetching user data for user ID: {user_id}")
+        user_data = get_user_data_from_adalo(user_id)
+        if 'error' in user_data:
+            return jsonify(user_data), user_data.get("status_code", 500)
+
+        # Step 2: Fetch all subcategories
+        print(f"Fetching subcategories to find subcategory with ID: {subcategory_id}")
+        subcategories_data = get_subcategories()
+        if 'error' in subcategories_data:
+            return jsonify(subcategories_data), subcategories_data.get("status_code", 500)
+
+        # Step 3: Find the specified subcategory and get its posts
+        subcategories = subcategories_data.get('records', [])
+        subcategory = next((sc for sc in subcategories if sc.get('id') == subcategory_id), None)
+
+        if not subcategory:
+            print(f"Error: Subcategory with ID {subcategory_id} not found")
+            return jsonify({"error": "Subcategory not found"}), 404
+
+        # Get posts from PracticeDone in the subcategory
+        practice_done_posts = subcategory.get('PracticeDone', [])
+        
+        if not practice_done_posts:
+            print(f"No PracticeDone posts found for subcategory {subcategory_id}")
+            return jsonify({"message": "No PracticeDone posts found"}), 200
+
+        # Step 4: Update user's PracticeBase with posts from PracticeDone
+        print(f"Updating user {user_id} PracticeBase with posts from PracticeDone in subcategory {subcategory_id}")
+        updated_user_data = update_user_posts(user_id, practice_done_posts, [])
+        if 'error' in updated_user_data:
+            return jsonify(updated_user_data), updated_user_data.get("status_code", 500)
+
+        # Return the updated user data
+        print(f"User {user_id} updated successfully with PracticeDone posts from subcategory {subcategory_id}")
+        return jsonify(updated_user_data)
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == '__main__':
     app.run(debug=True)

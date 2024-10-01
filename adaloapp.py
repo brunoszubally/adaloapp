@@ -67,7 +67,7 @@ def update_user_today_and_level1(user_id, today, level1_post):
     
     print(f"Payload string being sent: {payload_string}")
     
-    response = requests.put(adalo_api_url, headers=headers, data=payload_string)
+    response = requests.patch(adalo_api_url, headers=headers, data=payload_string)
     
     if response.status_code == 200:
         updated_user_data = response.json()
@@ -96,7 +96,7 @@ def update_user_practice_base(user_id, practice_base):
     
     print(f"Payload string being sent: {payload_string}")
     
-    response = requests.put(adalo_api_url, headers=headers, data=payload_string)
+    response = requests.patch(adalo_api_url, headers=headers, data=payload_string)
     
     if response.status_code == 200:
         updated_user_data = response.json()
@@ -166,7 +166,7 @@ def base_reset():
             'Content-Type': 'application/json'
         }
 
-        response = requests.put(adalo_api_url, headers=headers, data=payload_string)
+        response = requests.patch(adalo_api_url, headers=headers, data=payload_string)
 
         if response.status_code == 200:
             updated_user_data = response.json()

@@ -149,14 +149,33 @@ def base_reset():
         existing_practice_base = user_data.get('PracticeBase', [])
         updated_practice_base = list(set(existing_practice_base + posts_to_add))
 
-        print(f"Updating user {user_id} PracticeBase with posts from subcategory {subcategory_id}")
-        updated_user_data = update_user_practice_base(user_id, updated_practice_base)
-        if 'error' in updated_user_data:
-            return jsonify(updated_user_data), updated_user_data.get("status_code", 500)
+        # Ensure practice_base is a list
+        if not isinstance(updated_practice_base, list):
+            updated_practice_base = [updated_practice_base]
 
-        # Return the updated user data
-        print(f"User {user_id} updated successfully with posts from subcategory {subcategory_id}")
-        return jsonify(updated_user_data)
+        payload_string = json.dumps({
+            "PracticeBase": updated_practice_base
+        })
+
+        print(f"Payload string being sent: {payload_string}")
+
+        # Update user data in Adalo
+        adalo_api_url = f"https://api.adalo.com/v0/apps/23b040ee-e4d1-4873-bb3b-82e902e29e6d/collections/t_9e358c26e7fc41ad814f0a7a2b5d1265/{user_id}"
+        headers = {
+            'Authorization': f'Bearer {ADALO_API_KEY}',
+            'Content-Type': 'application/json'
+        }
+
+        response = requests.put(adalo_api_url, headers=headers, data=payload_string)
+
+        if response.status_code == 200:
+            updated_user_data = response.json()
+            print(f"User data updated successfully: {updated_user_data}")
+            return jsonify(updated_user_data)
+        else:
+            print(f"Failed to update user data. Status code: {response.status_code}")
+            print(f"Response text: {response.text}")
+            return jsonify({"error": "Failed to update user data", "status_code": response.status_code})
 
     except Exception as e:
         print(f"An error occurred: {e}")

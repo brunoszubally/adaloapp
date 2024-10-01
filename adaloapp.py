@@ -78,6 +78,35 @@ def update_user_today_and_level1(user_id, today, level1_post):
         print(f"Response text: {response.text}")
         return {"error": "Failed to update user data", "status_code": response.status_code}
 
+# Function to update user's "PracticeBase" field with post IDs
+def update_user_practice_base(user_id, practice_base):
+    adalo_api_url = f"https://api.adalo.com/v0/apps/23b040ee-e4d1-4873-bb3b-82e902e29e6d/collections/t_9e358c26e7fc41ad814f0a7a2b5d1265/{user_id}"
+    headers = {
+        'Authorization': f'Bearer {ADALO_API_KEY}',
+        'Content-Type': 'application/json'
+    }
+    
+    # Ensure practice_base is a list
+    if not isinstance(practice_base, list):
+        practice_base = [practice_base]
+    
+    payload_string = json.dumps({
+        "PracticeBase": practice_base
+    })
+    
+    print(f"Payload string being sent: {payload_string}")
+    
+    response = requests.put(adalo_api_url, headers=headers, data=payload_string)
+    
+    if response.status_code == 200:
+        updated_user_data = response.json()
+        print(f"User data updated successfully: {updated_user_data}")
+        return updated_user_data  # Return updated user data as JSON
+    else:
+        print(f"Failed to update user data. Status code: {response.status_code}")
+        print(f"Response text: {response.text}")
+        return {"error": "Failed to update user data", "status_code": response.status_code}
+
 @app.route('/base-reset', methods=['PATCH'])
 def base_reset():
     try:
@@ -117,7 +146,7 @@ def base_reset():
             return jsonify({"message": "No posts found"}), 200
 
         # Step 4: Update user's PracticeBase with posts from the specified subcategory
-        existing_practice_base = user_data.get('PraticeBase', [])
+        existing_practice_base = user_data.get('PracticeBase', [])
         updated_practice_base = list(set(existing_practice_base + posts_to_add))
 
         print(f"Updating user {user_id} PracticeBase with posts from subcategory {subcategory_id}")

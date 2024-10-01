@@ -9,7 +9,7 @@ ADALO_API_KEY = 'e8wk2i21wge6oxz29ye9u9ykr'
 
 # Function to get user data from Adalo using the provided user_id
 def get_user_data_from_adalo(user_id):
-    adalo_api_url = f"https://api.adalo.com/v0/apps/eb904f7c-1bb5-41e8-b35a-5e1453debad3/collections/t_4d891624fa3c4f86b4bce06a08b6ec93/{user_id}"
+    adalo_api_url = f"https://api.adalo.com/v0/apps/23b040ee-e4d1-4873-bb3b-82e902e29e6d/collections/t_9e358c26e7fc41ad814f0a7a2b5d1265{user_id}"
     headers = {
         'Authorization': f'Bearer {ADALO_API_KEY}',
         'Content-Type': 'application/json'
@@ -28,7 +28,7 @@ def get_user_data_from_adalo(user_id):
 
 # Function to get all subcategories from Adalo
 def get_subcategories():
-    adalo_api_url = "https://api.adalo.com/v0/apps/eb904f7c-1bb5-41e8-b35a-5e1453debad3/collections/t_2ccd07e119c34eec8fdcb615862c16d7"
+    adalo_api_url = "https://api.adalo.com/v0/apps/23b040ee-e4d1-4873-bb3b-82e902e29e6d/collections/t_0bb9a402d59f4792afaea12fd9d2928c"
     headers = {
         'Authorization': f'Bearer {ADALO_API_KEY}',
         'Content-Type': 'application/json'
@@ -47,7 +47,7 @@ def get_subcategories():
 
 # Function to update user's "Today" and "Level1Post" fields with post IDs
 def update_user_today_and_level1(user_id, today, level1_post):
-    adalo_api_url = f"https://api.adalo.com/v0/apps/eb904f7c-1bb5-41e8-b35a-5e1453debad3/collections/t_4d891624fa3c4f86b4bce06a08b6ec93/{user_id}"
+    adalo_api_url = f"https://api.adalo.com/v0/apps/23b040ee-e4d1-4873-bb3b-82e902e29e6d/collections/t_9e358c26e7fc41ad814f0a7a2b5d1265{user_id}"
     headers = {
         'Authorization': f'Bearer {ADALO_API_KEY}',
         'Content-Type': 'application/json'

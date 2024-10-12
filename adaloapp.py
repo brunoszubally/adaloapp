@@ -5,7 +5,7 @@ import json
 app = Flask(__name__)
 
 # Adalo API key (replace with your actual API key)
-ADALO_API_KEY = '4z9ftfskxxeof0i1734i6rr6o'
+ADALO_API_KEY = '1uwfo5n4lufltycmbc8f0703v'
 
 # Function to get user data from Adalo using the provided user_id
 def get_user_data_from_adalo(user_id):

@@ -56,40 +56,6 @@ def update_user_fields(user_id, today, level1_post, practice_base):
     else:
         return {"error": "Failed to update user data", "status_code": response.status_code}
 
-# Function to get all users' data from Adalo
-def get_all_users():
-    adalo_api_url = "https://api.adalo.com/v0/apps/94ea9f02-88f9-4f0b-bba7-93bb710c009a/collections/t_43c2da3e0a4441489c562be24462cb1c"
-    headers = {
-        'Authorization': f'Bearer {ADALO_API_KEY}',
-        'Content-Type': 'application/json'
-    }
-    
-    response = requests.get(adalo_api_url, headers=headers)
-    if response.status_code == 200:
-        return response.json()['records']
-    else:
-        return {"error": "Failed to retrieve users", "status_code": response.status_code}
-
-# Function to update user's Level1PostToUse and Level2PostToUse
-def update_user_posts(user_id, level1_posts, level2_posts):
-    adalo_api_url = f"https://api.adalo.com/v0/apps/0ffa9a0e-5350-44e9-a84c-ce1bac1a9c57/collections/t_43c2da3e0a4441489c562be24462cb1c/{user_id}"
-    headers = {
-        'Authorization': f'Bearer {ADALO_API_KEY}',
-        'Content-Type': 'application/json'
-    }
-
-    payload = {
-        "Level1PostToUse": level1_posts,
-        "Level2PostToUse": level2_posts
-    }
-    
-    response = requests.put(adalo_api_url, headers=headers, data=json.dumps(payload))
-    
-    if response.status_code == 200:
-        return response.json()
-    else:
-        return {"error": "Failed to update user data", "status_code": response.status_code}
-
 @app.route('/start', methods=['PATCH'])
 def combined_reset():
     try:
@@ -137,34 +103,6 @@ def combined_reset():
             return jsonify(updated_user_data), updated_user_data.get("status_code", 500)
 
         return jsonify(updated_user_data)
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/update-all-users', methods=['POST'])
-def update_all_users_endpoint():
-    try:
-        # Step 1: Fetch all user data from Adalo
-        users = get_all_users()
-        if 'error' in users:
-            return jsonify(users), users.get("status_code", 500)
-        
-        # Step 2: For each user, move posts from Level2PostToUse to Level1PostToUse
-        results = []
-        for user in users:
-            user_id = user['id']
-            level1_posts = user.get('Level1PostToUse', [])
-            level2_posts = user.get('Level2PostToUse', [])
-            
-            # Combine Level2PostToUse posts into Level1PostToUse
-            updated_level1_posts = level1_posts + level2_posts
-            updated_level2_posts = []  # Empty the Level2PostToUse array
-            
-            # Update user posts
-            result = update_user_posts(user_id, updated_level1_posts, updated_level2_posts)
-            results.append({"user_id": user_id, "result": result})
-        
-        return jsonify({"message": "All users updated successfully", "results": results})
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500

@@ -5,11 +5,11 @@ import json
 app = Flask(__name__)
 
 # Adalo API key (replace with your actual API key)
-ADALO_API_KEY = 'ae1vdlouhuan5442p2z1wvgd4'
+ADALO_API_KEY = 'f2oc2cjofs8ctjy8xnpaxjgt7'
 
 # Function to get user data from Adalo using the provided user_id
 def get_user_data_from_adalo(user_id):
-    adalo_api_url = f"https://api.adalo.com/v0/apps/a97d4de8-d373-4c8f-ba84-86930bc15a00/collections/t_96cd42bdae754d8abf7f2cb6680040c6/{user_id}"
+    adalo_api_url = f"https://api.adalo.com/v0/apps/94ea9f02-88f9-4f0b-bba7-93bb710c009a/collections/t_43c2da3e0a4441489c562be24462cb1c/{user_id}"
     headers = {
         'Authorization': f'Bearer {ADALO_API_KEY}',
         'Content-Type': 'application/json'
@@ -23,7 +23,7 @@ def get_user_data_from_adalo(user_id):
 
 # Function to get all subcategories from Adalo
 def get_subcategories():
-    adalo_api_url = "https://api.adalo.com/v0/apps/a97d4de8-d373-4c8f-ba84-86930bc15a00/collections/t_a7f8c77d7e2146bfb1ab29fa377dce90"
+    adalo_api_url = "https://api.adalo.com/v0/apps/94ea9f02-88f9-4f0b-bba7-93bb710c009a/collections/t_64f55035a0aa46bca01afd442a5007be"
     headers = {
         'Authorization': f'Bearer {ADALO_API_KEY}',
         'Content-Type': 'application/json'
@@ -37,7 +37,7 @@ def get_subcategories():
 
 # Function to update user's fields (PracticeBase, Today, and Level1Post)
 def update_user_fields(user_id, today, level1_post, practice_base):
-    adalo_api_url = f"https://api.adalo.com/v0/apps/a97d4de8-d373-4c8f-ba84-86930bc15a00/collections/t_96cd42bdae754d8abf7f2cb6680040c6/{user_id}"
+    adalo_api_url = f"https://api.adalo.com/v0/apps/94ea9f02-88f9-4f0b-bba7-93bb710c009a/collections/t_43c2da3e0a4441489c562be24462cb1c/{user_id}"
     headers = {
         'Authorization': f'Bearer {ADALO_API_KEY}',
         'Content-Type': 'application/json'

@@ -25,7 +25,7 @@ def get_all_users():
 
 # Function to update user's Level1PostToUse and Level2PostToUse
 def update_user_posts(user_id, level1_posts, level2_posts):
-    adalo_api_url = f"https://api.adalo.com/v0/apps/0ffa9a0e-5350-44e9-a84c-ce1bac1a9c57/collections/t_43c2da3e0a4441489c562be24462cb1c/{user_id}"
+    adalo_api_url = f"https://api.adalo.com/v0/apps/94ea9f02-88f9-4f0b-bba7-93bb710c009a/collections/t_43c2da3e0a4441489c562be24462cb1c/{user_id}"
     headers = {
         'Authorization': f'Bearer {ADALO_API_KEY}',
         'Content-Type': 'application/json'

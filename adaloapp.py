@@ -64,10 +64,15 @@ def get_all_users():
         'Content-Type': 'application/json'
     }
     
+    print("Fetching all users from Adalo API")
     response = requests.get(adalo_api_url, headers=headers)
+    
     if response.status_code == 200:
-        return response.json()['records']
+        users_data = response.json()
+        print(f"Users data retrieved: {users_data}")
+        return users_data['records']
     else:
+        print(f"Failed to retrieve users. Status code: {response.status_code}")
         return {"error": "Failed to retrieve users", "status_code": response.status_code}
 
 # Function to update user's Level1PostToUse and Level2PostToUse
@@ -83,11 +88,16 @@ def update_user_posts(user_id, level1_posts, level2_posts):
         "Level2PostToUse": level2_posts
     }
     
+    print(f"Updating user {user_id} with Level1PostToUse: {level1_posts} and clearing Level2PostToUse")
     response = requests.put(adalo_api_url, headers=headers, data=json.dumps(payload))
     
     if response.status_code == 200:
-        return response.json()
+        updated_user_data = response.json()
+        print(f"User {user_id} data updated successfully: {updated_user_data}")
+        return updated_user_data
     else:
+        print(f"Failed to update user {user_id}. Status code: {response.status_code}")
+        print(f"Response text: {response.text}")
         return {"error": "Failed to update user data", "status_code": response.status_code}
 
 @app.route('/start', methods=['PATCH'])
@@ -145,6 +155,7 @@ def combined_reset():
 def update_all_users_endpoint():
     try:
         # Step 1: Fetch all user data from Adalo
+        print("Step 1: Fetching all users")
         users = get_all_users()
         if 'error' in users:
             return jsonify(users), users.get("status_code", 500)
@@ -160,13 +171,15 @@ def update_all_users_endpoint():
             updated_level1_posts = level1_posts + level2_posts
             updated_level2_posts = []  # Empty the Level2PostToUse array
             
-            # Update user posts
+            print(f"Updating user {user_id}...")
             result = update_user_posts(user_id, updated_level1_posts, updated_level2_posts)
             results.append({"user_id": user_id, "result": result})
         
+        print("All users updated successfully.")
         return jsonify({"message": "All users updated successfully", "results": results})
 
     except Exception as e:
+        print(f"An error occurred: {e}")
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':

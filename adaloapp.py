@@ -5,7 +5,7 @@ import json
 app = Flask(__name__)
 
 # Adalo API key (replace with your actual API key)
-ADALO_API_KEY = 'f2oc2cjofs8ctjy8xnpaxjgt7'
+ADALO_API_KEY = 'f2oc2cjofs8ctjy8xnpaxjgt7s'
 
 # Function to get user data from Adalo using the provided user_id
 def get_user_data_from_adalo(user_id):
@@ -107,33 +107,47 @@ def combined_reset():
         user_id = request.json.get('user_id')
         subcategory_id = request.json.get('subcategory_id')
         
+        print(f"Starting reset process for user_id: {user_id}, subcategory_id: {subcategory_id}")
+        
         if not user_id or not subcategory_id:
+            print("Error: Missing user_id or subcategory_id in request")
             return jsonify({"error": "User ID or Subcategory ID not provided"}), 400
 
         # Step 1: Fetch user data from Adalo API
+        print(f"Step 1: Fetching user data for user_id: {user_id}")
         user_data = get_user_data_from_adalo(user_id)
         if 'error' in user_data:
+            print(f"Error fetching user data: {user_data}")
             return jsonify(user_data), user_data.get("status_code", 500)
+        print(f"User data retrieved: {user_data}")
 
         # Step 2: Fetch all subcategories
+        print("Step 2: Fetching all subcategories")
         subcategories_data = get_subcategories()
         if 'error' in subcategories_data:
+            print(f"Error fetching subcategories: {subcategories_data}")
             return jsonify(subcategories_data), subcategories_data.get("status_code", 500)
+        print(f"Subcategories data retrieved successfully")
 
         # Step 3: Find the specified subcategory and get its posts
+        print(f"Step 3: Finding subcategory {subcategory_id}")
         subcategories = subcategories_data.get('records', [])
         subcategory = next((sc for sc in subcategories if str(sc.get('id')) == str(subcategory_id)), None)
 
         if not subcategory:
+            print(f"Error: Subcategory {subcategory_id} not found")
             return jsonify({"error": "Subcategory not found"}), 404
 
         # Get all posts from the subcategory
         posts_to_add = subcategory.get('Posts', [])
+        print(f"Found {len(posts_to_add)} posts in subcategory")
         
         if not posts_to_add:
+            print("Warning: No posts found in subcategory")
             return jsonify({"message": "No posts found"}), 200
 
-        # Step 4: Update user's PracticeBase, Today, and Level1Post fields
+        # Step 4: Update user's fields
+        print("Step 4: Updating user fields")
         existing_practice_base = user_data.get('PracticeBase', [])
         existing_today = user_data.get('Today', [])
         existing_level1_post = user_data.get('Level1Post', [])
@@ -142,13 +156,21 @@ def combined_reset():
         updated_today = list(set(existing_today + posts_to_add))
         updated_level1_post = list(set(existing_level1_post + posts_to_add))
 
+        print(f"Updating user fields with:")
+        print(f"- PracticeBase: {len(updated_practice_base)} posts")
+        print(f"- Today: {len(updated_today)} posts")
+        print(f"- Level1Post: {len(updated_level1_post)} posts")
+
         updated_user_data = update_user_fields(user_id, updated_today, updated_level1_post, updated_practice_base)
         if 'error' in updated_user_data:
+            print(f"Error updating user fields: {updated_user_data}")
             return jsonify(updated_user_data), updated_user_data.get("status_code", 500)
 
+        print("Successfully updated all user fields")
         return jsonify(updated_user_data)
 
     except Exception as e:
+        print(f"An unexpected error occurred: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/update-all-users', methods=['POST'])

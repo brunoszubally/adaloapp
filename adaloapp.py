@@ -102,6 +102,19 @@ def update_user_levels_and_posts(user_id, current_post, updated_fields):
     else:
         return {"error": "Failed to update user data", "status_code": response.status_code}
 
+def get_all_users():
+    adalo_api_url = "https://api.adalo.com/v0/apps/1f62c648-0b5e-4453-9db7-eeb15c043ed2/collections/t_43c2da3e0a4441489c562be24462cb1c"
+    headers = {
+        'Authorization': f'Bearer {ADALO_API_KEY}',
+        'Content-Type': 'application/json'
+    }
+    
+    response = requests.get(adalo_api_url, headers=headers)
+    if response.status_code == 200:
+        return response.json().get('records', [])
+    else:
+        return {"error": "Failed to retrieve users", "status_code": response.status_code}
+
 @app.route('/start', methods=['PATCH'])
 def combined_reset():
     try:
@@ -227,17 +240,24 @@ def move_current_post():
         user_id = request.json.get('user_id')
         current_post = request.json.get('current_post')
         
+        print(f"Starting move-current-post for user_id: {user_id}, current_post: {current_post}")
+        
         if not user_id or not current_post:
             return jsonify({"error": "User ID or Current Post not provided"}), 400
             
         # Felhasználói adatok lekérése
         user_data = get_user_data_from_adalo(user_id)
+        print(f"Original user data: {user_data}")
+        
         if 'error' in user_data:
             return jsonify(user_data), user_data.get("status_code", 500)
             
         # Kezdeti értékek másolása
+        original_today = user_data.get('Today', [])
+        print(f"Original Today list: {original_today}")
+        
         updated_fields = {
-            'Today': [post for post in user_data.get('Today', []) if post != current_post],
+            'Today': [post for post in original_today if post != current_post],
             'Level1Post': user_data.get('Level1Post', []),
             'Level2Post': user_data.get('Level2Post', []),
             'Level3Post': user_data.get('Level3Post', []),
@@ -248,28 +268,37 @@ def move_current_post():
             'TodayPlus5': user_data.get('TodayPlus5', [])
         }
         
+        print(f"Updated Today list after removal: {updated_fields['Today']}")
+        
         # Ellenőrizzük, melyik szinten van a post és mozgatjuk
         if current_post in updated_fields['Level1Post']:
+            print(f"Moving post from Level1Post to Level2Post and TodayPlus3")
             updated_fields['Level1Post'].remove(current_post)
             updated_fields['Level2Post'].append(current_post)
             updated_fields['TodayPlus3'].append(current_post)
             
         elif current_post in updated_fields['Level2Post']:
+            print(f"Moving post from Level2Post to Level3Post and TodayPlus4")
             updated_fields['Level2Post'].remove(current_post)
             updated_fields['Level3Post'].append(current_post)
             updated_fields['TodayPlus4'].append(current_post)
             
         elif current_post in updated_fields['Level3Post']:
+            print(f"Moving post from Level3Post to Level4Post and TodayPlus5")
             updated_fields['Level3Post'].remove(current_post)
             updated_fields['Level4Post'].append(current_post)
             updated_fields['TodayPlus5'].append(current_post)
             
         elif current_post in updated_fields['Level4Post']:
+            print(f"Moving post from Level4Post to CompletedPost")
             updated_fields['Level4Post'].remove(current_post)
             updated_fields['CompletedPost'].append(current_post)
+        
+        print(f"Final updated fields before API call: {updated_fields}")
             
         # Frissítjük a felhasználó adatait
         result = update_user_levels_and_posts(user_id, current_post, updated_fields)
+        print(f"API update result: {result}")
         
         if 'error' in result:
             return jsonify(result), result.get("status_code", 500)
@@ -277,6 +306,7 @@ def move_current_post():
         return jsonify(result)
         
     except Exception as e:
+        print(f"Error occurred: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':

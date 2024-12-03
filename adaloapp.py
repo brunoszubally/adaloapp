@@ -238,74 +238,54 @@ def update_all_users_endpoint():
 def move_current_post():
     try:
         user_id = request.json.get('user_id')
-        current_post = request.json.get('current_post')
+        current_post = int(request.json.get('current_post'))
         
-        print(f"Received current_post value: {current_post}")
-        print(f"Starting move-current-post for user_id: {user_id}, current_post: {current_post}")
-        
-        if not user_id or not current_post:
-            return jsonify({"error": "User ID or Current Post not provided"}), 400
-            
-        # Felhasználói adatok lekérése
-        user_data = get_user_data_from_adalo(user_id)
-        print(f"Original user data: {user_data}")
-        
-        if 'error' in user_data:
-            return jsonify(user_data), user_data.get("status_code", 500)
-            
-        # Kezdeti értékek másolása
-        original_today = user_data.get('Today', [])
-        print(f"Original Today list: {original_today}")
-        
-        current_post = int(current_post)  # Konvertáljuk számmá a legelején
-        updated_fields = {
-            'Today': [post for post in original_today if post != current_post],
-            'Level1Post': user_data.get('Level1Post', []),
-            'Level2Post': user_data.get('Level2Post', []),
-            'Level3Post': user_data.get('Level3Post', []),
-            'Level4Post': user_data.get('Level4Post', []),
-            'CompletedPost': user_data.get('CompletedPost', []),
-            'TodayPlus3': user_data.get('TodayPlus3', []),
-            'TodayPlus4': user_data.get('TodayPlus4', []),
-            'TodayPlus5': user_data.get('TodayPlus5', [])
+        # 1. Csak a szükséges mezőket kérjük le
+        adalo_api_url = f"https://api.adalo.com/v0/apps/1f62c648-0b5e-4453-9db7-eeb15c043ed2/collections/t_43c2da3e0a4441489c562be24462cb1c/{user_id}"
+        headers = {
+            'Authorization': f'Bearer {ADALO_API_KEY}',
+            'Content-Type': 'application/json'
         }
         
-        print(f"Updated Today list after removal: {updated_fields['Today']}")
+        # 2. Minimalizáljuk a lekért mezőket
+        params = {
+            'fields': 'Today,Level1Post,Level2Post,Level3Post,Level4Post,CompletedPost,TodayPlus3,TodayPlus4,TodayPlus5'
+        }
         
-        # Ellenőrizzük, melyik szinten van a post és mozgatjuk
-        if current_post in updated_fields['Level1Post']:
-            print(f"Moving post from Level1Post to Level2Post and TodayPlus3")
-            updated_fields['Level1Post'].remove(current_post)
-            updated_fields['Level2Post'].append(current_post)
-            updated_fields['TodayPlus3'].append(current_post)
-            
-        elif current_post in updated_fields['Level2Post']:
-            print(f"Moving post from Level2Post to Level3Post and TodayPlus4")
-            updated_fields['Level2Post'].remove(current_post)
-            updated_fields['Level3Post'].append(current_post)
-            updated_fields['TodayPlus4'].append(current_post)
-            
-        elif current_post in updated_fields['Level3Post']:
-            print(f"Moving post from Level3Post to Level4Post and TodayPlus5")
-            updated_fields['Level3Post'].remove(current_post)
-            updated_fields['Level4Post'].append(current_post)
-            updated_fields['TodayPlus5'].append(current_post)
-            
-        elif current_post in updated_fields['Level4Post']:
-            print(f"Moving post from Level4Post to CompletedPost")
-            updated_fields['Level4Post'].remove(current_post)
-            updated_fields['CompletedPost'].append(current_post)
+        response = requests.get(adalo_api_url, headers=headers, params=params)
+        user_data = response.json()
         
-        print(f"Final updated fields before API call: {updated_fields}")
-            
-        # Frissítjük a felhasználó adatait
-        result = update_user_levels_and_posts(user_id, current_post, updated_fields)
-        print(f"API update result: {result}")
+        # 3. Csak a változott mezőket küldjük vissza
+        updated_fields = {}
         
-        if 'error' in result:
-            return jsonify(result), result.get("status_code", 500)
+        # Today lista frissítése
+        if current_post in user_data.get('Today', []):
+            updated_fields['Today'] = [post for post in user_data['Today'] if post != current_post]
+        
+        # Level listák frissítése
+        if current_post in user_data.get('Level1Post', []):
+            updated_fields['Level1Post'] = [post for post in user_data['Level1Post'] if post != current_post]
+            updated_fields['Level2Post'] = user_data.get('Level2Post', []) + [current_post]
+            updated_fields['TodayPlus3'] = user_data.get('TodayPlus3', []) + [current_post]
+        elif current_post in user_data.get('Level2Post', []):
+            updated_fields['Level2Post'] = [post for post in user_data['Level2Post'] if post != current_post]
+            updated_fields['Level3Post'] = user_data.get('Level3Post', []) + [current_post]
+            updated_fields['TodayPlus4'] = user_data.get('TodayPlus4', []) + [current_post]
+        elif current_post in user_data.get('Level3Post', []):
+            updated_fields['Level3Post'] = [post for post in user_data['Level3Post'] if post != current_post]
+            updated_fields['Level4Post'] = user_data.get('Level4Post', []) + [current_post]
+            updated_fields['TodayPlus5'] = user_data.get('TodayPlus5', []) + [current_post]
+        elif current_post in user_data.get('Level4Post', []):
+            updated_fields['Level4Post'] = [post for post in user_data['Level4Post'] if post != current_post]
+            updated_fields['CompletedPost'] = user_data.get('CompletedPost', []) + [current_post]
             
-        return jsonify(result)
+        # 4. Csak ha van változás, akkor küldünk API hívást
+        if updated_fields:
+            updated_fields['showanswertest'] = 0
+            response = requests.put(adalo_api_url, headers=headers, json=updated_fields)
+            return jsonify(response.json())
+        
+        return jsonify({"message": "No changes needed"})
         
     except Exception as e:
         print(f"Error occurred: {str(e)}")

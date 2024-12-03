@@ -2,11 +2,11 @@ import requests
 import json
 
 # Adalo API key (replace with your actual API key)
-ADALO_API_KEY = 'e8wk2i21wge6oxz29ye9u9ykr'
+ADALO_API_KEY = 'f2oc2cjofs8ctjy8xnpaxjgt7'
 
 # Function to get all users' data from Adalo
 def get_all_users():
-    adalo_api_url = "https://api.adalo.com/v0/apps/eb904f7c-1bb5-41e8-b35a-5e1453debad3/collections/t_4d891624fa3c4f86b4bce06a08b6ec93"
+    adalo_api_url = "https://api.adalo.com/v0/apps/94ea9f02-88f9-4f0b-bba7-93bb710c009a/collections/t_43c2da3e0a4441489c562be24462cb1c"
     headers = {
         'Authorization': f'Bearer {ADALO_API_KEY}',
         'Content-Type': 'application/json'
@@ -25,7 +25,7 @@ def get_all_users():
 
 # Function to update user's fields: Today, TodayPlus1, TodayPlus2, TodayPlus3, TodayPlus4, TodayPlus5
 def update_user_posts(user_id, today, today_plus_1, today_plus_2, today_plus_3, today_plus_4):
-    adalo_api_url = f"https://api.adalo.com/v0/apps/eb904f7c-1bb5-41e8-b35a-5e1453debad3/collections/t_4d891624fa3c4f86b4bce06a08b6ec93/{user_id}"
+    adalo_api_url = f"https://api.adalo.com/v0/apps/94ea9f02-88f9-4f0b-bba7-93bb710c009a/collections/t_43c2da3e0a4441489c562be24462cb1c/{user_id}"
     headers = {
         'Authorization': f'Bearer {ADALO_API_KEY}',
         'Content-Type': 'application/json'

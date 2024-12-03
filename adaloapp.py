@@ -56,40 +56,25 @@ def update_user_fields(user_id, today, level1_post, practice_base):
     else:
         return {"error": "Failed to update user data", "status_code": response.status_code}
 
-# Function to get all users' data from Adalo
-def get_all_users():
-    adalo_api_url = "https://api.adalo.com/v0/apps/94ea9f02-88f9-4f0b-bba7-93bb710c009a/collections/t_43c2da3e0a4441489c562be24462cb1c"
-    headers = {
-        'Authorization': f'Bearer {ADALO_API_KEY}',
-        'Content-Type': 'application/json'
-    }
-    
-    print("Fetching all users from Adalo API")
-    response = requests.get(adalo_api_url, headers=headers)
-    
-    if response.status_code == 200:
-        users_data = response.json()
-        print(f"Users data retrieved: {users_data}")
-        return users_data['records']
-    else:
-        print(f"Failed to retrieve users. Status code: {response.status_code}")
-        return {"error": "Failed to retrieve users", "status_code": response.status_code}
-
-# Function to update user's Level1PostToUse and Level2PostToUse
-def update_user_posts(user_id, level1_posts, level2_posts):
+# Function to update user's fields: Today, TodayPlus1, TodayPlus2, TodayPlus3, TodayPlus4, TodayPlus5
+def update_user_posts(user_id, today, today_plus_1, today_plus_2, today_plus_3, today_plus_4):
     adalo_api_url = f"https://api.adalo.com/v0/apps/94ea9f02-88f9-4f0b-bba7-93bb710c009a/collections/t_43c2da3e0a4441489c562be24462cb1c/{user_id}"
     headers = {
         'Authorization': f'Bearer {ADALO_API_KEY}',
         'Content-Type': 'application/json'
     }
 
-    payload = {
-        "Level1PostToUse": level1_posts,
-        "Level2PostToUse": level2_posts
-    }
+    payload_string = json.dumps({
+        "Today": today,
+        "TodayPlus1": today_plus_1,
+        "TodayPlus2": today_plus_2,
+        "TodayPlus3": today_plus_3,
+        "TodayPlus4": today_plus_4,
+        "TodayPlus5": []
+    })
     
-    print(f"Updating user {user_id} with Level1PostToUse: {level1_posts} and clearing Level2PostToUse")
-    response = requests.put(adalo_api_url, headers=headers, data=json.dumps(payload))
+    print(f"Updating user {user_id} with new post values")
+    response = requests.put(adalo_api_url, headers=headers, data=payload_string)
     
     if response.status_code == 200:
         updated_user_data = response.json()
@@ -182,19 +167,34 @@ def update_all_users_endpoint():
         if 'error' in users:
             return jsonify(users), users.get("status_code", 500)
         
-        # Step 2: For each user, move posts from Level2PostToUse to Level1PostToUse
         results = []
+        # Step 2: For each user, move posts from each list to the next one down
         for user in users:
             user_id = user['id']
-            level1_posts = user.get('Level1PostToUse', [])
-            level2_posts = user.get('Level2PostToUse', [])
+            today = user.get('Today', [])
+            today_plus_1 = user.get('TodayPlus1', [])
+            today_plus_2 = user.get('TodayPlus2', [])
+            today_plus_3 = user.get('TodayPlus3', [])
+            today_plus_4 = user.get('TodayPlus4', [])
+            today_plus_5 = user.get('TodayPlus5', [])
             
-            # Combine Level2PostToUse posts into Level1PostToUse
-            updated_level1_posts = level1_posts + level2_posts
-            updated_level2_posts = []  # Empty the Level2PostToUse array
+            # Move the posts from each list to the next list down
+            updated_today = today + today_plus_1
+            updated_today_plus_1 = today_plus_2
+            updated_today_plus_2 = today_plus_3
+            updated_today_plus_3 = today_plus_4
+            updated_today_plus_4 = today_plus_5
             
+            # Step 3: Update user posts
             print(f"Updating user {user_id}...")
-            result = update_user_posts(user_id, updated_level1_posts, updated_level2_posts)
+            result = update_user_posts(
+                user_id, 
+                updated_today, 
+                updated_today_plus_1, 
+                updated_today_plus_2, 
+                updated_today_plus_3, 
+                updated_today_plus_4
+            )
             results.append({"user_id": user_id, "result": result})
         
         print("All users updated successfully.")

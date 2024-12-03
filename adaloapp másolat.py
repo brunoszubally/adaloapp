@@ -85,23 +85,6 @@ def update_user_posts(user_id, today, today_plus_1, today_plus_2, today_plus_3, 
         print(f"Response text: {response.text}")
         return {"error": "Failed to update user data", "status_code": response.status_code}
 
-def update_user_levels_and_posts(user_id, current_post, updated_fields):
-    adalo_api_url = f"https://api.adalo.com/v0/apps/94ea9f02-88f9-4f0b-bba7-93bb710c009a/collections/t_43c2da3e0a4441489c562be24462cb1c/{user_id}"
-    headers = {
-        'Authorization': f'Bearer {ADALO_API_KEY}',
-        'Content-Type': 'application/json'
-    }
-    
-    # Hozzáadjuk a showanswertest mezőt is
-    updated_fields['showanswertest'] = 0
-    
-    response = requests.put(adalo_api_url, headers=headers, data=json.dumps(updated_fields))
-    
-    if response.status_code == 200:
-        return response.json()
-    else:
-        return {"error": "Failed to update user data", "status_code": response.status_code}
-
 @app.route('/start', methods=['PATCH'])
 def combined_reset():
     try:
@@ -219,64 +202,6 @@ def update_all_users_endpoint():
 
     except Exception as e:
         print(f"An error occurred: {e}")
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/move-current-post', methods=['PATCH'])
-def move_current_post():
-    try:
-        user_id = request.json.get('user_id')
-        current_post = request.json.get('current_post')
-        
-        if not user_id or not current_post:
-            return jsonify({"error": "User ID or Current Post not provided"}), 400
-            
-        # Felhasználói adatok lekérése
-        user_data = get_user_data_from_adalo(user_id)
-        if 'error' in user_data:
-            return jsonify(user_data), user_data.get("status_code", 500)
-            
-        # Kezdeti értékek másolása
-        updated_fields = {
-            'Today': [post for post in user_data.get('Today', []) if post != current_post],
-            'Level1Post': user_data.get('Level1Post', []),
-            'Level2Post': user_data.get('Level2Post', []),
-            'Level3Post': user_data.get('Level3Post', []),
-            'Level4Post': user_data.get('Level4Post', []),
-            'CompletedPost': user_data.get('CompletedPost', []),
-            'TodayPlus3': user_data.get('TodayPlus3', []),
-            'TodayPlus4': user_data.get('TodayPlus4', []),
-            'TodayPlus5': user_data.get('TodayPlus5', [])
-        }
-        
-        # Ellenőrizzük, melyik szinten van a post és mozgatjuk
-        if current_post in updated_fields['Level1Post']:
-            updated_fields['Level1Post'].remove(current_post)
-            updated_fields['Level2Post'].append(current_post)
-            updated_fields['TodayPlus3'].append(current_post)
-            
-        elif current_post in updated_fields['Level2Post']:
-            updated_fields['Level2Post'].remove(current_post)
-            updated_fields['Level3Post'].append(current_post)
-            updated_fields['TodayPlus4'].append(current_post)
-            
-        elif current_post in updated_fields['Level3Post']:
-            updated_fields['Level3Post'].remove(current_post)
-            updated_fields['Level4Post'].append(current_post)
-            updated_fields['TodayPlus5'].append(current_post)
-            
-        elif current_post in updated_fields['Level4Post']:
-            updated_fields['Level4Post'].remove(current_post)
-            updated_fields['CompletedPost'].append(current_post)
-            
-        # Frissítjük a felhasználó adatait
-        result = update_user_levels_and_posts(user_id, current_post, updated_fields)
-        
-        if 'error' in result:
-            return jsonify(result), result.get("status_code", 500)
-            
-        return jsonify(result)
-        
-    except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':

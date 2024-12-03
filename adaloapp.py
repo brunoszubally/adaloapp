@@ -257,6 +257,7 @@ def move_current_post():
         original_today = user_data.get('Today', [])
         print(f"Original Today list: {original_today}")
         
+        current_post = int(current_post)  # Konvertáljuk számmá a legelején
         updated_fields = {
             'Today': [post for post in original_today if post != current_post],
             'Level1Post': user_data.get('Level1Post', []),

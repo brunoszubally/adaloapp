@@ -240,6 +240,7 @@ def move_current_post():
         user_id = request.json.get('user_id')
         current_post = request.json.get('current_post')
         
+        print(f"Received current_post value: {current_post}")
         print(f"Starting move-current-post for user_id: {user_id}, current_post: {current_post}")
         
         if not user_id or not current_post:

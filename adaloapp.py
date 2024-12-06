@@ -240,49 +240,49 @@ def move_current_post():
         user_id = request.json.get('user_id')
         current_post = int(request.json.get('current_post'))
         
-        # 1. Csak a szükséges mezőket kérjük le
-        adalo_api_url = f"https://api.adalo.com/v0/apps/1f62c648-0b5e-4453-9db7-eeb15c043ed2/collections/t_43c2da3e0a4441489c562be24462cb1c/{user_id}"
-        headers = {
-            'Authorization': f'Bearer {ADALO_API_KEY}',
-            'Content-Type': 'application/json'
+        # Előre definiáljuk a szint-párosításokat
+        level_mappings = {
+            'Level1Post': ('Level2Post', 'TodayPlus3'),
+            'Level2Post': ('Level3Post', 'TodayPlus4'),
+            'Level3Post': ('Level4Post', 'TodayPlus5'),
+            'Level4Post': ('CompletedPost', None)
         }
         
-        # 2. Minimalizáljuk a lekért mezőket
-        params = {
-            'fields': 'Today,Level1Post,Level2Post,Level3Post,Level4Post,CompletedPost,TodayPlus3,TodayPlus4,TodayPlus5'
-        }
-        
-        response = requests.get(adalo_api_url, headers=headers, params=params)
+        # Csak a szükséges mezőket kérjük le
+        response = requests.get(
+            f"https://api.adalo.com/v0/apps/1f62c648-0b5e-4453-9db7-eeb15c043ed2/collections/t_43c2da3e0a4441489c562be24462cb1c/{user_id}",
+            headers={'Authorization': f'Bearer {ADALO_API_KEY}', 'Content-Type': 'application/json'},
+            params={'fields': 'Today,Level1Post,Level2Post,Level3Post,Level4Post,CompletedPost,TodayPlus3,TodayPlus4,TodayPlus5'}
+        )
         user_data = response.json()
         
-        # 3. Csak a változott mezőket küldjük vissza
-        updated_fields = {}
+        # Inicializáljuk az updated_fields-et csak a Today listával
+        updated_fields = {
+            'Today': [post for post in user_data.get('Today', []) if post != current_post]
+        }
         
-        # Today lista frissítése
-        if current_post in user_data.get('Today', []):
-            updated_fields['Today'] = [post for post in user_data['Today'] if post != current_post]
+        # Gyors keresés a megfelelő szinten
+        for current_level, (next_level, today_plus) in level_mappings.items():
+            if current_post in user_data.get(current_level, []):
+                # Kivesszük a current_post-ot a jelenlegi szintből
+                updated_fields[current_level] = [
+                    post for post in user_data[current_level] if post != current_post
+                ]
+                # Hozzáadjuk a következő szinthez
+                updated_fields[next_level] = user_data.get(next_level, []) + [current_post]
+                # Ha van TodayPlus mező, azt is frissítjük
+                if today_plus:
+                    updated_fields[today_plus] = user_data.get(today_plus, []) + [current_post]
+                break  # Kilépünk, mert megtaláltuk a megfelelő szintet
         
-        # Level listák frissítése
-        if current_post in user_data.get('Level1Post', []):
-            updated_fields['Level1Post'] = [post for post in user_data['Level1Post'] if post != current_post]
-            updated_fields['Level2Post'] = user_data.get('Level2Post', []) + [current_post]
-            updated_fields['TodayPlus3'] = user_data.get('TodayPlus3', []) + [current_post]
-        elif current_post in user_data.get('Level2Post', []):
-            updated_fields['Level2Post'] = [post for post in user_data['Level2Post'] if post != current_post]
-            updated_fields['Level3Post'] = user_data.get('Level3Post', []) + [current_post]
-            updated_fields['TodayPlus4'] = user_data.get('TodayPlus4', []) + [current_post]
-        elif current_post in user_data.get('Level3Post', []):
-            updated_fields['Level3Post'] = [post for post in user_data['Level3Post'] if post != current_post]
-            updated_fields['Level4Post'] = user_data.get('Level4Post', []) + [current_post]
-            updated_fields['TodayPlus5'] = user_data.get('TodayPlus5', []) + [current_post]
-        elif current_post in user_data.get('Level4Post', []):
-            updated_fields['Level4Post'] = [post for post in user_data['Level4Post'] if post != current_post]
-            updated_fields['CompletedPost'] = user_data.get('CompletedPost', []) + [current_post]
-            
-        # 4. Csak ha van változás, akkor küldünk API hívást
+        # Csak ha van változás, akkor küldjük
         if updated_fields:
             updated_fields['showanswertest'] = 0
-            response = requests.put(adalo_api_url, headers=headers, json=updated_fields)
+            response = requests.put(
+                f"https://api.adalo.com/v0/apps/1f62c648-0b5e-4453-9db7-eeb15c043ed2/collections/t_43c2da3e0a4441489c562be24462cb1c/{user_id}",
+                headers={'Authorization': f'Bearer {ADALO_API_KEY}', 'Content-Type': 'application/json'},
+                json=updated_fields
+            )
             return jsonify(response.json())
         
         return jsonify({"message": "No changes needed"})

@@ -55,6 +55,46 @@ def update_user_fields(user_id, today, level1_post):
     else:
         return {"error": "Failed to update user data", "status_code": response.status_code}
 
+# Function to get all users' data from Adalo
+def get_all_users():
+    adalo_api_url = "https://api.adalo.com/v0/apps/48c90838-05d4-4476-afff-25677a38d96d/collections/t_43c2da3e0a4441489c562be24462cb1c"
+    headers = {
+        'Authorization': f'Bearer {ADALO_API_KEY}',
+        'Content-Type': 'application/json'
+    }
+    
+    print("Fetching all users from Adalo API")
+    response = requests.get(adalo_api_url, headers=headers)
+    if response.status_code == 200:
+        return response.json()['records']
+    else:
+        return {"error": "Failed to retrieve users", "status_code": response.status_code}
+
+# Function to update user's Today and TodayPlus fields
+def update_user_today_fields(user_id, today, today_plus_1, today_plus_2, today_plus_3, today_plus_4, today_plus_5):
+    adalo_api_url = f"https://api.adalo.com/v0/apps/48c90838-05d4-4476-afff-25677a38d96d/collections/t_43c2da3e0a4441489c562be24462cb1c/{user_id}"
+    headers = {
+        'Authorization': f'Bearer {ADALO_API_KEY}',
+        'Content-Type': 'application/json'
+    }
+
+    payload = {
+        "Today": today,
+        "TodayPlus1": today_plus_1,
+        "TodayPlus2": today_plus_2,
+        "TodayPlus3": today_plus_3,
+        "TodayPlus4": today_plus_4,
+        "TodayPlus5": today_plus_5
+    }
+    
+    print(f"Updating user {user_id} with new Today values")
+    response = requests.put(adalo_api_url, headers=headers, data=json.dumps(payload))
+    
+    if response.status_code == 200:
+        return response.json()
+    else:
+        return {"error": "Failed to update user data", "status_code": response.status_code}
+
 @app.route('/start', methods=['PATCH'])
 def combined_reset():
     try:
@@ -102,6 +142,53 @@ def combined_reset():
         return jsonify(updated_user_data)
 
     except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/update-all-users', methods=['POST'])
+def update_all_users_endpoint():
+    try:
+        print("Starting update process for all users")
+        # Step 1: Fetch all users
+        users = get_all_users()
+        if 'error' in users:
+            return jsonify(users), users.get("status_code", 500)
+        
+        results = []
+        # Step 2: Update each user's Today fields
+        for user in users:
+            user_id = user['id']
+            today = user.get('Today', [])
+            today_plus_1 = user.get('TodayPlus1', [])
+            today_plus_2 = user.get('TodayPlus2', [])
+            today_plus_3 = user.get('TodayPlus3', [])
+            today_plus_4 = user.get('TodayPlus4', [])
+            today_plus_5 = user.get('TodayPlus5', [])
+            
+            # Move posts down the chain
+            updated_today = today + today_plus_1
+            updated_today_plus_1 = today_plus_2
+            updated_today_plus_2 = today_plus_3
+            updated_today_plus_3 = today_plus_4
+            updated_today_plus_4 = today_plus_5
+            updated_today_plus_5 = []  # Empty array for TodayPlus5
+            
+            print(f"Updating user {user_id}...")
+            result = update_user_today_fields(
+                user_id, 
+                updated_today,
+                updated_today_plus_1,
+                updated_today_plus_2,
+                updated_today_plus_3,
+                updated_today_plus_4,
+                updated_today_plus_5
+            )
+            results.append({"user_id": user_id, "result": result})
+        
+        print("All users updated successfully")
+        return jsonify({"message": "All users updated successfully", "results": results})
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':

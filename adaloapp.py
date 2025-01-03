@@ -71,7 +71,7 @@ def get_all_users():
         return {"error": "Failed to retrieve users", "status_code": response.status_code}
 
 # Function to update user's Today and TodayPlus fields
-def update_user_today_fields(user_id, today, today_plus_1, today_plus_2, today_plus_3, today_plus_4, today_plus_5):
+def update_user_today_fields(user_id, today_posts, today_plus_1_posts, today_plus_2_posts, today_plus_3_posts, today_plus_4_posts, today_plus_5_posts):
     adalo_api_url = f"https://api.adalo.com/v0/apps/48c90838-05d4-4476-afff-25677a38d96d/collections/t_43c2da3e0a4441489c562be24462cb1c/{user_id}"
     headers = {
         'Authorization': f'Bearer {ADALO_API_KEY}',
@@ -79,12 +79,12 @@ def update_user_today_fields(user_id, today, today_plus_1, today_plus_2, today_p
     }
 
     payload = {
-        "Today": today,
-        "TodayPlus1": today_plus_1,
-        "TodayPlus2": today_plus_2,
-        "TodayPlus3": today_plus_3,
-        "TodayPlus4": today_plus_4,
-        "TodayPlus5": today_plus_5
+        "TodayPosts": today_posts,
+        "TodayPlus1Posts": today_plus_1_posts,
+        "TodayPlus2Posts": today_plus_2_posts,
+        "TodayPlus3Posts": today_plus_3_posts,
+        "TodayPlus4Posts": today_plus_4_posts,
+        "TodayPlus5Posts": today_plus_5_posts
     }
     
     print(f"Updating user {user_id} with new Today values")
@@ -157,30 +157,30 @@ def update_all_users_endpoint():
         # Step 2: Update each user's Today fields
         for user in users:
             user_id = user['id']
-            today = user.get('Today', [])
-            today_plus_1 = user.get('TodayPlus1', [])
-            today_plus_2 = user.get('TodayPlus2', [])
-            today_plus_3 = user.get('TodayPlus3', [])
-            today_plus_4 = user.get('TodayPlus4', [])
-            today_plus_5 = user.get('TodayPlus5', [])
+            today_posts = user.get('TodayPosts', [])
+            today_plus_1_posts = user.get('TodayPlus1Posts', [])
+            today_plus_2_posts = user.get('TodayPlus2Posts', [])
+            today_plus_3_posts = user.get('TodayPlus3Posts', [])
+            today_plus_4_posts = user.get('TodayPlus4Posts', [])
+            today_plus_5_posts = user.get('TodayPlus5Posts', [])
             
             # Move posts down the chain
-            updated_today = today + today_plus_1
-            updated_today_plus_1 = today_plus_2
-            updated_today_plus_2 = today_plus_3
-            updated_today_plus_3 = today_plus_4
-            updated_today_plus_4 = today_plus_5
-            updated_today_plus_5 = []  # Empty array for TodayPlus5
+            updated_today_posts = today_posts + today_plus_1_posts
+            updated_today_plus_1_posts = today_plus_2_posts
+            updated_today_plus_2_posts = today_plus_3_posts
+            updated_today_plus_3_posts = today_plus_4_posts
+            updated_today_plus_4_posts = today_plus_5_posts
+            updated_today_plus_5_posts = []  # Empty array for TodayPlus5Posts
             
             print(f"Updating user {user_id}...")
             result = update_user_today_fields(
                 user_id, 
-                updated_today,
-                updated_today_plus_1,
-                updated_today_plus_2,
-                updated_today_plus_3,
-                updated_today_plus_4,
-                updated_today_plus_5
+                updated_today_posts,
+                updated_today_plus_1_posts,
+                updated_today_plus_2_posts,
+                updated_today_plus_3_posts,
+                updated_today_plus_4_posts,
+                updated_today_plus_5_posts
             )
             results.append({"user_id": user_id, "result": result})
         

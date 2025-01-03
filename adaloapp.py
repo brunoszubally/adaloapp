@@ -57,7 +57,7 @@ def update_user_fields(user_id, today, level1_post):
 
 # Function to update user's fields: Today, TodayPlus1, TodayPlus2, TodayPlus3, TodayPlus4, TodayPlus5
 def update_user_posts(user_id, today, today_plus_1, today_plus_2, today_plus_3, today_plus_4):
-    adalo_api_url = f"https://api.adalo.com/v0/apps/1f62c648-0b5e-4453-9db7-eeb15c043ed2/collections/t_43c2da3e0a4441489c562be24462cb1c/{user_id}"
+    adalo_api_url = f"https://api.adalo.com/v0/apps/48c90838-05d4-4476-afff-25677a38d96d/collections/t_43c2da3e0a4441489c562be24462cb1c/{user_id}"
     headers = {
         'Authorization': f'Bearer {ADALO_API_KEY}',
         'Content-Type': 'application/json'
@@ -85,7 +85,7 @@ def update_user_posts(user_id, today, today_plus_1, today_plus_2, today_plus_3, 
         return {"error": "Failed to update user data", "status_code": response.status_code}
 
 def update_user_levels_and_posts(user_id, current_post, updated_fields):
-    adalo_api_url = f"https://api.adalo.com/v0/apps/1f62c648-0b5e-4453-9db7-eeb15c043ed2/collections/t_43c2da3e0a4441489c562be24462cb1c/{user_id}"
+    adalo_api_url = f"https://api.adalo.com/v0/apps/48c90838-05d4-4476-afff-25677a38d96d/collections/t_43c2da3e0a4441489c562be24462cb1c//{user_id}"
     headers = {
         'Authorization': f'Bearer {ADALO_API_KEY}',
         'Content-Type': 'application/json'
@@ -102,7 +102,7 @@ def update_user_levels_and_posts(user_id, current_post, updated_fields):
         return {"error": "Failed to update user data", "status_code": response.status_code}
 
 def get_all_users():
-    adalo_api_url = "https://api.adalo.com/v0/apps/1f62c648-0b5e-4453-9db7-eeb15c043ed2/collections/t_43c2da3e0a4441489c562be24462cb1c"
+    adalo_api_url = "https://api.adalo.com/v0/apps/48c90838-05d4-4476-afff-25677a38d96d/collections/t_43c2da3e0a4441489c562be24462cb1c/"
     headers = {
         'Authorization': f'Bearer {ADALO_API_KEY}',
         'Content-Type': 'application/json'
@@ -244,7 +244,7 @@ def move_current_post():
         
         # Csak a szükséges mezőket kérjük le
         response = requests.get(
-            f"https://api.adalo.com/v0/apps/1f62c648-0b5e-4453-9db7-eeb15c043ed2/collections/t_43c2da3e0a4441489c562be24462cb1c/{user_id}",
+            f"https://api.adalo.com/v0/apps/48c90838-05d4-4476-afff-25677a38d96d/collections/t_43c2da3e0a4441489c562be24462cb1c/{user_id}",
             headers={'Authorization': f'Bearer {ADALO_API_KEY}', 'Content-Type': 'application/json'},
             params={'fields': 'Today,Level1Post,Level2Post,Level3Post,Level4Post,CompletedPost,TodayPlus3,TodayPlus4,TodayPlus5'}
         )
@@ -273,7 +273,7 @@ def move_current_post():
         if updated_fields:
             updated_fields['showanswertest'] = 0
             response = requests.put(
-                f"https://api.adalo.com/v0/apps/1f62c648-0b5e-4453-9db7-eeb15c043ed2/collections/t_43c2da3e0a4441489c562be24462cb1c/{user_id}",
+                f"https://api.adalo.com/v0/apps/48c90838-05d4-4476-afff-25677a38d96d/collections/t_43c2da3e0a4441489c562be24462cb1c/{user_id}",
                 headers={'Authorization': f'Bearer {ADALO_API_KEY}', 'Content-Type': 'application/json'},
                 json=updated_fields
             )

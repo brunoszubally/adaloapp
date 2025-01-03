@@ -9,7 +9,7 @@ ADALO_API_KEY = '37pcjgx195y2fxxrww2ijlmzl'
 
 # Function to get user data from Adalo using the provided user_id
 def get_user_data_from_adalo(user_id):
-    adalo_api_url = f"https://api.adalo.com/v0/apps/48c90838-05d4-4476-afff-25677a38d96d/collections/t_43c2da3e0a4441489c562be24462cb1c{user_id}"
+    adalo_api_url = f"https://api.adalo.com/v0/apps/48c90838-05d4-4476-afff-25677a38d96d/collections/t_43c2da3e0a4441489c562be24462cb1c/{user_id}"
     headers = {
         'Authorization': f'Bearer {ADALO_API_KEY}',
         'Content-Type': 'application/json'
@@ -37,7 +37,7 @@ def get_subcategories():
 
 # Function to update user's fields (PracticeBase, Today, and Level1Post)
 def update_user_fields(user_id, today, level1_post, practice_base):
-    adalo_api_url = f"https://api.adalo.com/v0/apps/48c90838-05d4-4476-afff-25677a38d96d/collections/t_43c2da3e0a4441489c562be24462cb1c{user_id}"
+    adalo_api_url = f"https://api.adalo.com/v0/apps/48c90838-05d4-4476-afff-25677a38d96d/collections/t_43c2da3e0a4441489c562be24462cb1c/{user_id}"
     headers = {
         'Authorization': f'Bearer {ADALO_API_KEY}',
         'Content-Type': 'application/json'

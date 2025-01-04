@@ -132,12 +132,12 @@ def combined_reset():
 
         print(f"Found subcategory: {subcategory}")
         # Get all posts from the subcategory
-        posts_to_add = subcategory.get('Posts', [])
-        print(f"Posts found in subcategory: {posts_to_add}")
+        posts_to_add = subcategory.get('Kartyak', [])
+        print(f"Cards found in subcategory: {posts_to_add}")
         
         if not posts_to_add:
-            print("No posts found in subcategory!")
-            return jsonify({"message": "No posts found"}), 200
+            print("No cards found in subcategory!")
+            return jsonify({"message": "No cards found"}), 200
 
         # Step 4: Update user's TodayPosts and Level1Posts fields
         existing_today_posts = user_data.get('TodayPosts', [])

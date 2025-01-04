@@ -102,38 +102,55 @@ def combined_reset():
         user_id = request.json.get('user_id')
         subcategory_id = request.json.get('subcategory_id')
         
+        print(f"Starting reset for user_id: {user_id}, subcategory_id: {subcategory_id}")
+        
         if not user_id or not subcategory_id:
             return jsonify({"error": "User ID or Subcategory ID not provided"}), 400
 
         # Step 1: Fetch user data from Adalo API
+        print("Fetching user data...")
         user_data = get_user_data_from_adalo(user_id)
+        print(f"User data received: {user_data}")
         if 'error' in user_data:
             return jsonify(user_data), user_data.get("status_code", 500)
 
         # Step 2: Fetch all subcategories
+        print("Fetching subcategories...")
         subcategories_data = get_subcategories()
+        print(f"Subcategories data received: {subcategories_data}")
         if 'error' in subcategories_data:
             return jsonify(subcategories_data), subcategories_data.get("status_code", 500)
 
         # Step 3: Find the specified subcategory and get its posts
         subcategories = subcategories_data.get('records', [])
+        print(f"Looking for subcategory {subcategory_id} in {len(subcategories)} subcategories")
         subcategory = next((sc for sc in subcategories if str(sc.get('id')) == str(subcategory_id)), None)
 
         if not subcategory:
+            print(f"Subcategory {subcategory_id} not found!")
             return jsonify({"error": "Subcategory not found"}), 404
 
+        print(f"Found subcategory: {subcategory}")
         # Get all posts from the subcategory
         posts_to_add = subcategory.get('Posts', [])
+        print(f"Posts found in subcategory: {posts_to_add}")
         
         if not posts_to_add:
+            print("No posts found in subcategory!")
             return jsonify({"message": "No posts found"}), 200
 
         # Step 4: Update user's TodayPosts and Level1Posts fields
         existing_today_posts = user_data.get('TodayPosts', [])
         existing_level1_posts = user_data.get('Level1Posts', [])
 
+        print(f"Existing TodayPosts: {existing_today_posts}")
+        print(f"Existing Level1Posts: {existing_level1_posts}")
+
         updated_today_posts = list(set(existing_today_posts + posts_to_add))
         updated_level1_posts = list(set(existing_level1_posts + posts_to_add))
+
+        print(f"Updated TodayPosts: {updated_today_posts}")
+        print(f"Updated Level1Posts: {updated_level1_posts}")
 
         updated_user_data = update_user_fields(user_id, updated_today_posts, updated_level1_posts)
         if 'error' in updated_user_data:
@@ -142,6 +159,7 @@ def combined_reset():
         return jsonify(updated_user_data)
 
     except Exception as e:
+        print(f"Error occurred: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/update-all-users', methods=['POST'])

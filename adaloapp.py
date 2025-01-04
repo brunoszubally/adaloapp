@@ -35,8 +35,8 @@ def get_subcategories():
     else:
         return {"error": "Failed to retrieve subcategories", "status_code": response.status_code}
 
-# Function to update user's fields (csak Today és Level1Post)
-def update_user_fields(user_id, today, level1_post):
+# Function to update user's fields (TodayPosts és Level1Posts)
+def update_user_fields(user_id, today_posts, level1_posts):
     adalo_api_url = f"https://api.adalo.com/v0/apps/48c90838-05d4-4476-afff-25677a38d96d/collections/t_43c2da3e0a4441489c562be24462cb1c/{user_id}"
     headers = {
         'Authorization': f'Bearer {ADALO_API_KEY}',
@@ -44,8 +44,8 @@ def update_user_fields(user_id, today, level1_post):
     }
     
     payload = {
-        "Today": today,
-        "Level1Post": level1_post
+        "TodayPosts": today_posts,
+        "Level1Posts": level1_posts
     }
     
     response = requests.put(adalo_api_url, headers=headers, data=json.dumps(payload))
@@ -128,14 +128,14 @@ def combined_reset():
         if not posts_to_add:
             return jsonify({"message": "No posts found"}), 200
 
-        # Step 4: Update user's Today and Level1Post fields (PracticeBase removed)
-        existing_today = user_data.get('Today', [])
-        existing_level1_post = user_data.get('Level1Post', [])
+        # Step 4: Update user's TodayPosts and Level1Posts fields
+        existing_today_posts = user_data.get('TodayPosts', [])
+        existing_level1_posts = user_data.get('Level1Posts', [])
 
-        updated_today = list(set(existing_today + posts_to_add))
-        updated_level1_post = list(set(existing_level1_post + posts_to_add))
+        updated_today_posts = list(set(existing_today_posts + posts_to_add))
+        updated_level1_posts = list(set(existing_level1_posts + posts_to_add))
 
-        updated_user_data = update_user_fields(user_id, updated_today, updated_level1_post)
+        updated_user_data = update_user_fields(user_id, updated_today_posts, updated_level1_posts)
         if 'error' in updated_user_data:
             return jsonify(updated_user_data), updated_user_data.get("status_code", 500)
 
